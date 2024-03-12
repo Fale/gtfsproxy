@@ -26,9 +26,16 @@ func (g *GTFS) Download(maxAge time.Duration, force bool) error {
 
 	// TODO: Consider avoiding download based on If-Modified-Since and Last-Modified
 
-	c := http.Client{Timeout: time.Duration(10) * time.Second}
 	slog.Info(fmt.Sprintf("download %v", g.SourceURL))
-	resp, err := c.Get(g.SourceURL)
+	req, err := http.NewRequest("GET", g.SourceURL, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("User-Agent", "GTFS Proxy/0.1")
+
+	c := http.Client{Timeout: time.Duration(10) * time.Second}
+	resp, err := c.Do(req)
 	if err != nil {
 		g.LastDownloadAttempted = now
 		g.Save(g.location)
