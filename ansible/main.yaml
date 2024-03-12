@@ -1,0 +1,5 @@
+---
+- hosts: gtfsproxy
+  user: root
+  roles:
+    - gtfsproxy

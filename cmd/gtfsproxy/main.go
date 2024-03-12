@@ -57,6 +57,17 @@ func main() {
 				Usage:  "download [GTFS]",
 				Action: download,
 			},
+			{
+				Name:   "serve",
+				Usage:  "serve",
+				Action: serve,
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:  "high-ports",
+						Usage: "use ports 1080 and 10443 instead of 80 and 443",
+					},
+				},
+			},
 		},
 	}
 

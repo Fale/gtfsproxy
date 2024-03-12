@@ -1,0 +1,28 @@
+---
+- name: Ensure lego is present
+  ansible.builtin.package:
+    name: golang-github-acme-lego
+    state: present
+- name: Ensure the binary is properly located
+  ansible.builtin.copy:
+    src: gtfsproxy
+    dest: /usr/local/bin/gtfsproxy
+    owner: root
+    group: root
+    mode: 0755
+- name: Ensure the Systemd unit file is deployed
+  ansible.builtin.copy:
+    src: gtfsproxy.service
+    dest: /etc/systemd/system/gtfsproxy.service
+    owner: root
+    group: root
+    mode: '0644'
+  register: systemd_daemons
+- name: Reload systemd daemons if needed
+  ansible.builtin.systemd:
+    daemon_reload: true
+- name: Ensure the service is started and enabled
+  ansible.builtin.service:
+    name: gtfsproxy.service
+    state: started
+    enabled: true

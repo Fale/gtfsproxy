@@ -1,0 +1,16 @@
+[Unit]
+Description=GTFS Proxy
+After=network-online.target
+StartLimitIntervalSec=30
+StartLimitBurst=5
+
+[Service]
+Type=notify
+WorkingDirectory=/root
+ExecStart=/usr/local/bin/gtfsproxy serve
+Type=exec
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
