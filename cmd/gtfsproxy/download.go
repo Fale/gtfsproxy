@@ -10,13 +10,19 @@ import (
 )
 
 func download(ctx *cli.Context) error {
+	var ds []gtfs.GTFS
+	var err error
 	if ctx.NArg() > 0 {
-		return fmt.Errorf("not implemented")
-	}
-
-	ds, err := gtfs.LoadAll(ctx.String("data"))
-	if err != nil {
-		slog.Error(err.Error())
+		d, err := gtfs.Load(ctx.String("data"), ctx.Args().First())
+		if err != nil {
+			slog.Error(err.Error())
+		}
+		ds = append(ds, d)
+	} else {
+		ds, err = gtfs.LoadAll(ctx.String("data"))
+		if err != nil {
+			slog.Error(err.Error())
+		}
 	}
 
 	maxAge, _ := time.ParseDuration("24h")
