@@ -1,0 +1,12 @@
+[Unit]
+Description=GTFS Download
+Wants=gtfsdownload.timer
+
+[Service]
+Type=oneshot
+WorkingDirectory=/root
+ExecStart=/usr/local/bin/gtfsproxy download
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

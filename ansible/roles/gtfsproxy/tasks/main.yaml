@@ -10,13 +10,17 @@
     owner: root
     group: root
     mode: 0755
-- name: Ensure the Systemd unit file is deployed
+- name: Ensure the Systemd units file are deployed
   ansible.builtin.copy:
-    src: gtfsproxy.service
-    dest: /etc/systemd/system/gtfsproxy.service
+    src: "{{ item }}"
+    dest: "/etc/systemd/system/{{ item }}"
     owner: root
     group: root
     mode: '0644'
+  with_items:
+    - gtfsproxy.service
+    - gtfsdownload.service
+    - gtfsdownload.timer
   register: systemd_daemons
 - name: Reload systemd daemons if needed
   ansible.builtin.systemd:
@@ -24,5 +28,10 @@
 - name: Ensure the service is started and enabled
   ansible.builtin.service:
     name: gtfsproxy.service
+    state: started
+    enabled: true
+- name: Ensure the downloader timer is started and enabled
+  ansible.builtin.service:
+    name: gtfsdownload.timer
     state: started
     enabled: true
