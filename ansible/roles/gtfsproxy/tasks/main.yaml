@@ -1,4 +1,8 @@
 ---
+- name: Ensure user gtfs is present
+  ansible.builtin.user:
+    name: gtfs
+    state: present
 - name: Ensure lego is present
   ansible.builtin.package:
     name: golang-github-acme-lego
