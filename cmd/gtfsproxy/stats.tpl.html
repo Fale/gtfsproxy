@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>statistics</title>
+	</head>
+	<body>
+        <h1>GTFS Proxy statistics</h1>
+
+        <h2>Never successful</h2>
+        <ul>
+        {{ range $key, $value := .NeverSuccessful }}
+        <li>{{ .ID }}</li>
+        {{ end }}
+        </ul>
+
+        <h2>Recently Failed</h2>
+        <ul>
+        {{ range $key, $value := .RecentlyFailed }}
+        <li>{{ .ID }}</li>
+        {{ end }}
+        </ul>
+
+        <h2>Successful</h2>
+        <ul>
+        {{ range $key, $value := .Successful }}
+        <li>{{ .ID }}</li>
+        {{ end }}
+        </ul>
+	</body>
+</html>
