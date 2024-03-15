@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"time"
@@ -15,13 +16,17 @@ import (
 )
 
 //go:embed docs.html
-var static embed.FS
+var docsFile embed.FS
+
+//go:embed stats.tpl.html
+var statsTpl embed.FS
 
 func serve(ctx *cli.Context) error {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", srvHome).Methods("GET")
 	r.HandleFunc("/docs", srvDocs).Methods("GET")
+	r.HandleFunc("/stats", srvStats).Methods("GET")
 	r.HandleFunc("/{gtfs_id}", srvGTFSHead).Methods("HEAD")
 	r.HandleFunc("/{gtfs_id}", srvGTFS).Methods("GET")
 
@@ -49,13 +54,44 @@ func srvHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func srvDocs(w http.ResponseWriter, r *http.Request) {
-	p, err := static.ReadFile("docs.html")
+	p, err := docsFile.ReadFile("docs.html")
 	if err != nil {
 		w.Header().Set("X-Error", err.Error())
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 	w.Write(p)
+}
+
+func srvStats(w http.ResponseWriter, r *http.Request) {
+	t := template.Must(template.New("stats.tpl.html").ParseFS(statsTpl, "stats.tpl.html"))
+	d := struct {
+		NeverSuccessful []gtfs.GTFS
+		RecentlyFailed  []gtfs.GTFS
+		Successful      []gtfs.GTFS
+	}{}
+	gs, err := gtfs.LoadAll("data")
+	if err != nil {
+		w.Header().Set("X-Error", err.Error())
+		return
+	}
+	for _, g := range gs {
+		if g.LastSuccessfulDownload.IsZero() {
+			d.NeverSuccessful = append(d.NeverSuccessful, g)
+			continue
+		}
+		// Older than 72hrs
+		if time.Since(g.LastSuccessfulDownload) < time.Duration(259200000000000) {
+			d.RecentlyFailed = append(d.RecentlyFailed, g)
+			continue
+		}
+		d.Successful = append(d.Successful, g)
+	}
+	if err := t.Execute(w, d); err != nil {
+		w.Header().Set("X-Error", err.Error())
+		return
+	}
+	return
 }
 
 func srvGTFSHead(w http.ResponseWriter, r *http.Request) {
