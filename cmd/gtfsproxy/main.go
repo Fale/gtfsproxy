@@ -62,9 +62,13 @@ func main() {
 				Usage:  "serve",
 				Action: serve,
 				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "domain",
+						Usage: "FQDN of the service: by setting it, an ACME certificate will be obtained and the service will be exposed on ports 80 and 443",
+					},
 					&cli.BoolFlag{
 						Name:  "high-ports",
-						Usage: "use ports 1080 and 10443 instead of 80 and 443",
+						Usage: "use port 1080 instead of 80",
 					},
 				},
 			},

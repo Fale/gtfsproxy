@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/caddyserver/certmagic"
 	"github.com/fale/gtfsproxy/pkg/gtfs"
 	"github.com/gorilla/mux"
 	"github.com/urfave/cli/v2"
@@ -32,40 +33,15 @@ func serve(ctx *cli.Context) error {
 	n.UseHandler(r)
 
 	log.Println("Ready to serve")
-	errs := Run(n, ctx.Bool("high-ports"))
-
-	select {
-	case err := <-errs:
-		log.Printf("Could not start serving service due to (error: %s)", err)
+	if len(ctx.String("domain")) > 0 {
+		return certmagic.HTTPS([]string{ctx.String("domain")}, n)
 	}
-	return nil
-}
-
-func Run(h http.Handler, highPorts bool) chan error {
-	errs := make(chan error)
 
 	httpPort := ":80"
-	httpsPort := ":443"
-	if highPorts {
+	if ctx.Bool("high-ports") {
 		httpPort = ":1080"
-		httpsPort = ":10443"
 	}
-	go func() {
-		log.Printf("Staring HTTP service on %s ...\n", httpPort)
-
-		if err := http.ListenAndServe(httpPort, h); err != nil {
-			errs <- err
-		}
-	}()
-
-	go func() {
-		log.Printf("Staring HTTPS service on %s ...\n", httpsPort)
-		if err := http.ListenAndServeTLS(httpsPort, "tls.crt", "tls.key", h); err != nil {
-			errs <- err
-		}
-	}()
-
-	return errs
+	return http.ListenAndServe(httpPort, n)
 }
 
 func srvHome(w http.ResponseWriter, r *http.Request) {

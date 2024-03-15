@@ -9,7 +9,7 @@ Type=notify
 WorkingDirectory=/home/gtfs
 User=gtfs
 Group=gtfs
-ExecStart=/usr/local/bin/gtfsproxy serve
+ExecStart=/usr/local/bin/gtfsproxy serve --domain=gtfsproxy.fwan.it
 AmbientCapabilities=CAP_NET_BIND_SERVICE
 Type=exec
 Restart=on-failure

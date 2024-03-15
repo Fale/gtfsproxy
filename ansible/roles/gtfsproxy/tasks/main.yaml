@@ -3,10 +3,6 @@
   ansible.builtin.user:
     name: gtfs
     state: present
-- name: Ensure lego is present
-  ansible.builtin.package:
-    name: golang-github-acme-lego
-    state: present
 - name: Ensure the binary is properly located
   ansible.builtin.copy:
     src: gtfsproxy
