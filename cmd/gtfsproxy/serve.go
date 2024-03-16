@@ -81,7 +81,7 @@ func srvStats(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		// Older than 72hrs
-		if time.Since(g.LastSuccessfulDownload) < time.Duration(259200000000000) {
+		if time.Since(g.LastSuccessfulDownload) > time.Duration(259200000000000) {
 			d.RecentlyFailed = append(d.RecentlyFailed, g)
 			continue
 		}
