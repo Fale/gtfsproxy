@@ -1,0 +1,13 @@
+[Unit]
+Description=GTFS Import
+Wants=gtfsimport.timer
+
+[Service]
+User=gtfs
+Group=gtfs
+WorkingDirectory=/home/gtfs
+ExecStartPre=/bin/bash -c "cd transitland-atlas && git pull && cd .."
+ExecStart=/usr/local/bin/gtfsproxy -vv import-dmfr transitland-atlas/feeds
+
+[Install]
+WantedBy=multi-user.target

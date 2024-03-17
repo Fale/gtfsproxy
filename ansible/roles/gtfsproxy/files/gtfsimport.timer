@@ -1,0 +1,10 @@
+[Unit]
+Description=GTFS Import
+Requires=gtfsimport.service
+
+[Timer]
+Unit=gtfsdownload.service
+OnCalendar=*-*-* 02:00:00
+
+[Install]
+WantedBy=timers.target

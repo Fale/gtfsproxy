@@ -1,8 +1,21 @@
 ---
+- name: Ensure git is present
+  ansible.builtin.package:
+    name: git
+    state: present
 - name: Ensure user gtfs is present
   ansible.builtin.user:
     name: gtfs
     state: present
+- name: Checkout the transitland-atlas
+  ansible.builtin.git:
+    repo: 'https://github.com/fale/transitland-atlas.git'
+    dest: /home/gtfs/transitland-atlas
+    version: gtfsproxy
+    clone: true
+    update: true
+  become: true
+  become_user: gtfs
 - name: Ensure the binary is properly located
   ansible.builtin.copy:
     src: gtfsproxy
@@ -21,6 +34,8 @@
     - gtfsproxy.service
     - gtfsdownload.service
     - gtfsdownload.timer
+    - gtfsimport.service
+    - gtfsimport.timer
   register: systemd_daemons
 - name: Reload systemd daemons if needed
   ansible.builtin.systemd:
@@ -30,8 +45,11 @@
     name: gtfsproxy.service
     state: started
     enabled: true
-- name: Ensure the downloader timer is started and enabled
+- name: Ensure the timers are started and enabled
   ansible.builtin.service:
-    name: gtfsdownload.timer
+    name: '{{ item }}'
     state: started
     enabled: true
+  with_items:
+    - gtfsdownload.timer
+    - gtfsimport.timer
