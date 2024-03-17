@@ -19,6 +19,9 @@ type dmfrfile struct {
 		License struct {
 			RedistributionAllowed string `json:"redistribution_allowed"`
 		} `json:"license"`
+		Tags struct {
+			InvalidTLSCertificate string `json:"invalid_tls_certificate"`
+		}
 	} `json:"feeds"`
 }
 
@@ -52,10 +55,14 @@ func ImportDMFRFolder(location string) ([]GTFS, error) {
 				if newfeed.License.RedistributionAllowed == "no" {
 					continue
 				}
-				feeds = append(feeds, GTFS{
+				g := GTFS{
 					ID:        newfeed.ID,
 					SourceURL: newfeed.URLs.StaticCurrent,
-				})
+				}
+				if newfeed.Tags.InvalidTLSCertificate == "true" {
+					g.InsecureDownload = true
+				}
+				feeds = append(feeds, g)
 			}
 		}
 	}

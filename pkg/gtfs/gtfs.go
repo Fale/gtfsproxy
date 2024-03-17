@@ -22,6 +22,7 @@ type GTFS struct {
 	LastDownloadAttempted  time.Time
 	LastSuccessfulDownload time.Time
 	location               string
+	InsecureDownload       bool
 }
 
 func Load(location string, name string) (GTFS, error) {

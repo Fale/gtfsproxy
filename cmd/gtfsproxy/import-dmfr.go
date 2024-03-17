@@ -24,6 +24,7 @@ func importDMFR(ctx *cli.Context) error {
 	}
 
 	for _, f := range files {
+		slog.Debug(fmt.Sprintf("Processing %s", f.ID))
 		d, err := gtfs.Load(ctx.String("data"), f.ID)
 		if err != nil {
 			err := f.Save(ctx.String("data"))
@@ -32,9 +33,18 @@ func importDMFR(ctx *cli.Context) error {
 			}
 		}
 		if d.SourceURL != f.SourceURL {
-			slog.Info("feed updated", "ID", f.ID)
+			slog.Info("feed sourceURL updated", "ID", f.ID)
 			slog.Debug("feed updated", "ID", f.ID, "previous SourceURL", d.SourceURL, "new SourceURL", f.SourceURL)
 			d.SourceURL = f.SourceURL
+			err := d.Save("data")
+			if err != nil {
+				slog.Error(err.Error())
+			}
+		}
+		if d.InsecureDownload != f.InsecureDownload {
+			slog.Info("feed TLS config updated", "ID", f.ID)
+			slog.Debug("feed updated", "ID", f.ID, "previous TLS config", d.InsecureDownload, "new TLS config", f.InsecureDownload)
+			d.InsecureDownload = f.InsecureDownload
 			err := d.Save("data")
 			if err != nil {
 				slog.Error(err.Error())

@@ -2,6 +2,7 @@ package gtfs
 
 import (
 	"crypto/sha256"
+	"crypto/tls"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -37,7 +38,7 @@ func (g *GTFS) Download(maxAge time.Duration, force bool) error {
 	case "ftp":
 		body, err = downloadFTP(g.SourceURL, g.LastModified)
 	case "http", "https":
-		body, err = downloadHTTP(g.SourceURL, g.LastModified)
+		body, err = downloadHTTP(g.SourceURL, g.LastModified, force, g.InsecureDownload)
 	}
 	if err != nil {
 		g.LastDownloadAttempted = now
@@ -90,15 +91,22 @@ func (g *GTFS) Download(maxAge time.Duration, force bool) error {
 	return nil
 }
 
-func downloadHTTP(uri string, lastModified time.Time) ([]byte, error) {
+func downloadHTTP(uri string, lastModified time.Time, force bool, insecureDownload bool) ([]byte, error) {
 	req, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		return nil, err
 	}
 	req.Header.Set("User-Agent", "GTFS Proxy/0.1")
-	req.Header.Set("If-Modified-Since", lastModified.Format(time.RFC1123))
+	if !force {
+		req.Header.Set("If-Modified-Since", lastModified.Format(time.RFC1123))
+	}
 
-	c := http.Client{Timeout: time.Duration(10) * time.Second}
+	tr := &http.Transport{}
+	if insecureDownload {
+		tr.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+
+	c := http.Client{Transport: tr, Timeout: time.Duration(10) * time.Second}
 	resp, err := c.Do(req)
 	if err != nil {
 		return nil, err
